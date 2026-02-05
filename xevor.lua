@@ -69,7 +69,7 @@ local function loadWithTimeout(url: string, timeout: number?): ...any
 	return if success then result else nil
 end
 
-local requestsDisabled = true --getgenv and getgenv().DISABLE_RAYFIELD_REQUESTS
+local requestsDisabled = true --getgenv and getgenv().DISABLE_XEVOR_REQUESTS
 local InterfaceBuild = '3K3W'
 local Release = "Build 1.68"
 local xevorFolder = "xevor"
@@ -78,9 +78,9 @@ local ConfigurationExtension = ".rfld"
 local settingsTable = {
 	General = {
 		-- if needs be in order just make getSetting(name)
-		rayfieldOpen = {Type = 'bind', Value = 'K', Name = 'xevor Keybind'},
+		xevorOpen = {Type = 'bind', Value = 'K', Name = 'xevor Keybind'},
 		-- buildwarnings
-		-- rayfieldprompts
+		-- xevorprompts
 
 	},
 	System = {
@@ -90,7 +90,7 @@ local settingsTable = {
 
 -- Settings that have been overridden by the developer. These will not be saved to the user's configuration file
 -- Overridden settings always take precedence over settings in the configuration file, and are cleared if the user changes the setting in the UI
-local overriddenSettings: { [string]: any } = {} -- For example, overriddenSettings["System.rayfieldOpen"] = "J"
+local overriddenSettings: { [string]: any } = {} -- For example, overriddenSettings["System.xevorOpen"] = "J"
 local function overrideSetting(category: string, name: string, value: any)
 	overriddenSettings[`{category}.{name}`] = value
 end
@@ -164,7 +164,7 @@ local function loadSettings()
 			-- for debug in studio
 			if useStudio then
 				file = [[
-		{"General":{"rayfieldOpen":{"Value":"K","Type":"bind","Name":"xevor Keybind","Element":{"HoldToInteract":false,"Ext":true,"Name":"xevor Keybind","Set":null,"CallOnChange":true,"Callback":null,"CurrentKeybind":"K"}}},"System":{"usageAnalytics":{"Value":false,"Type":"toggle","Name":"Anonymised Analytics","Element":{"Ext":true,"Name":"Anonymised Analytics","Set":null,"CurrentValue":false,"Callback":null}}}}
+		{"General":{"xevorOpen":{"Value":"K","Type":"bind","Name":"xevor Keybind","Element":{"HoldToInteract":false,"Ext":true,"Name":"xevor Keybind","Set":null,"CallOnChange":true,"Callback":null,"CurrentKeybind":"K"}}},"System":{"usageAnalytics":{"Value":false,"Type":"toggle","Name":"Anonymised Analytics","Element":{"Ext":true,"Name":"Anonymised Analytics","Set":null,"CurrentValue":false,"Callback":null}}}}
 	]]
 			end
 
@@ -326,6 +326,48 @@ local xevorLibrary = {
 			InputBackground = Color3.fromRGB(30, 30, 30),
 			InputStroke = Color3.fromRGB(65, 65, 65),
 			PlaceholderColor = Color3.fromRGB(178, 178, 178)
+		},
+
+		Dark = {
+			TextColor = Color3.fromRGB(255, 255, 255),
+
+			Background = Color3.fromRGB(15, 15, 15),
+			Topbar = Color3.fromRGB(20, 20, 20),
+			Shadow = Color3.fromRGB(10, 10, 10),
+
+			NotificationBackground = Color3.fromRGB(15, 15, 15),
+			NotificationActionsBackground = Color3.fromRGB(200, 200, 200),
+
+			TabBackground = Color3.fromRGB(40, 40, 40),
+			TabStroke = Color3.fromRGB(50, 50, 50),
+			TabBackgroundSelected = Color3.fromRGB(180, 180, 180),
+			TabTextColor = Color3.fromRGB(255, 255, 255),
+			SelectedTabTextColor = Color3.fromRGB(15, 15, 15),
+
+			ElementBackground = Color3.fromRGB(22, 22, 22),
+			ElementBackgroundHover = Color3.fromRGB(28, 28, 28),
+			SecondaryElementBackground = Color3.fromRGB(18, 18, 18),
+			ElementStroke = Color3.fromRGB(35, 35, 35),
+			SecondaryElementStroke = Color3.fromRGB(30, 30, 30),
+
+			SliderBackground = Color3.fromRGB(80, 80, 80),
+			SliderProgress = Color3.fromRGB(150, 150, 150),
+			SliderStroke = Color3.fromRGB(100, 100, 100),
+
+			ToggleBackground = Color3.fromRGB(20, 20, 20),
+			ToggleEnabled = Color3.fromRGB(180, 180, 180),
+			ToggleDisabled = Color3.fromRGB(60, 60, 60),
+			ToggleEnabledStroke = Color3.fromRGB(200, 200, 200),
+			ToggleDisabledStroke = Color3.fromRGB(80, 80, 80),
+			ToggleEnabledOuterStroke = Color3.fromRGB(70, 70, 70),
+			ToggleDisabledOuterStroke = Color3.fromRGB(45, 45, 45),
+
+			DropdownSelected = Color3.fromRGB(30, 30, 30),
+			DropdownUnselected = Color3.fromRGB(20, 20, 20),
+
+			InputBackground = Color3.fromRGB(20, 20, 20),
+			InputStroke = Color3.fromRGB(45, 45, 45),
+			PlaceholderColor = Color3.fromRGB(150, 150, 150)
 		},
 
 		Ocean = {
@@ -679,7 +721,7 @@ local buildAttempts = 0
 local correctBuild = false
 local warned
 local globalLoaded
-local rayfieldDestroyed = false -- True when xevorLibrary:Destroy() is called
+local xevorDestroyed = false -- True when xevorLibrary:Destroy() is called
 
 repeat
 	if xevor:FindFirstChild('Build') and xevor.Build.Value == InterfaceBuild then
@@ -774,7 +816,7 @@ local searchOpen = false
 local Notifications = xevor.Notifications
 local keybindConnections = {} -- For storing keybind connections to disconnect when xevor is destroyed
 
-local SelectedTheme = xevorLibrary.Theme.Default
+local SelectedTheme = xevorLibrary.Theme.Dark
 
 local function ChangeTheme(Theme)
 	if typeof(Theme) == 'string' then
@@ -1210,7 +1252,7 @@ local function Hide(notify: boolean?)
 		if useMobilePrompt then 
 			xevorLibrary:Notify({Title = "Interface Hidden", Content = "The interface has been hidden, you can unhide the interface by tapping 'Show'.", Duration = 7, Image = 4400697855})
 		else
-			xevorLibrary:Notify({Title = "Interface Hidden", Content = `The interface has been hidden, you can unhide the interface by tapping {getSetting("General", "rayfieldOpen")}.`, Duration = 7, Image = 4400697855})
+			xevorLibrary:Notify({Title = "Interface Hidden", Content = `The interface has been hidden, you can unhide the interface by tapping {getSetting("General", "xevorOpen")}.`, Duration = 7, Image = 4400697855})
 		end
 	end
 
@@ -1583,7 +1625,7 @@ end
 
 function xevorLibrary:CreateWindow(Settings)
 	if xevor:FindFirstChild('Loading') then
-		if getgenv and not getgenv().rayfieldCached then
+		if getgenv and not getgenv().xevorCached then
 			xevor.Enabled = true
 			xevor.Loading.Visible = true
 
@@ -1592,7 +1634,7 @@ function xevorLibrary:CreateWindow(Settings)
 		end
 	end
 
-	if getgenv then getgenv().rayfieldCached = true end
+	if getgenv then getgenv().xevorCached = true end
 
 	if not correctBuild and not Settings.DisableBuildWarnings then
 		task.delay(3, 
@@ -1608,10 +1650,10 @@ function xevorLibrary:CreateWindow(Settings)
 			assert(pcall(function()
 				return Enum.KeyCode[keybind]
 			end), "ToggleUIKeybind must be a valid KeyCode")
-			overrideSetting("General", "rayfieldOpen", keybind)
+			overrideSetting("General", "xevorOpen", keybind)
 		elseif typeof(keybind) == "EnumItem" then
 			assert(keybind.EnumType == Enum.KeyCode, "ToggleUIKeybind must be a KeyCode enum")
-			overrideSetting("General", "rayfieldOpen", keybind.Name)
+			overrideSetting("General", "xevorOpen", keybind.Name)
 		else
 			error("ToggleUIKeybind must be a string or KeyCode enum")
 		end
@@ -2122,10 +2164,10 @@ function xevorLibrary:CreateWindow(Settings)
 			TweenService:Create(Button.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 
 
-			Button.Interact.MouseButton1Click:Connect(function()
+				Button.Interact.MouseButton1Click:Connect(function()
 				local Success, Response = pcall(ButtonSettings.Callback)
 				-- Prevents animation from trying to play if the button's callback called xevorLibrary:Destroy()
-				if rayfieldDestroyed then
+				if xevorDestroyed then
 					return
 				end
 				if not Success then
@@ -3591,7 +3633,7 @@ end
 
 local hideHotkeyConnection -- Has to be initialized here since the connection is made later in the script
 function xevorLibrary:Destroy()
-	rayfieldDestroyed = true
+	xevorDestroyed = true
 	hideHotkeyConnection:Disconnect()
 	for _, connection in keybindConnections do
 		connection:Disconnect()
@@ -3691,7 +3733,7 @@ Topbar.Hide.MouseButton1Click:Connect(function()
 end)
 
 hideHotkeyConnection = UserInputService.InputBegan:Connect(function(input, processed)
-	if (input.KeyCode == Enum.KeyCode[getSetting("General", "rayfieldOpen")]) and not processed then
+	if (input.KeyCode == Enum.KeyCode[getSetting("General", "xevorOpen")]) and not processed then
 		if Debounce then return end
 		if Hidden then
 			Hidden = false
